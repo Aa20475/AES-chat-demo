@@ -86,23 +86,14 @@ def generate_subBytes():
         subBytes.append(nrow)
     global SUB_BYTES
     SUB_BYTES = subBytes
-
-
 #########################################################
 generate_subBytes()
-
-
 def get_sub(hexstr):
     i, j = intbytes_from_hex(hexstr)
     global SUB_BYTES
     return SUB_BYTES[i][j]
-
-
 ##########################################################
-
-
 def generate_subBytesInv():
-
     inverse = [[0 for _ in range(16)] for x in range(16)]
     for i in range(16):
         for j in range(16):
@@ -111,8 +102,6 @@ def generate_subBytesInv():
 
     global SUB_BYTES_INV
     SUB_BYTES_INV = inverse
-
-
 ##################################################
 generate_subBytesInv()
 
@@ -126,6 +115,9 @@ def get_sub_inv(hexstr):
 ####################################################
 
 
+'''
+Substitute bytes transformation
+'''
 def state_subBytes(state):
     state = normalize_state(state)
     subtest = [[0 for _ in range(4)] for _ in range(4)]
@@ -134,7 +126,9 @@ def state_subBytes(state):
             subtest[i][j] = get_sub(state[i][j])
     return subtest
 
-
+'''
+Inverse of Substitute bytes transformation
+'''
 def state_subBytesInv(state):
     state = normalize_state(state)
     subtestinv = [[0 for _ in range(4)] for _ in range(4)]
@@ -143,7 +137,9 @@ def state_subBytesInv(state):
             subtestinv[i][j] = get_sub_inv(state[i][j])
     return subtestinv
 
-
+'''
+Shift Rows Transformation
+'''
 def shiftRows(state):
     state = normalize_state(state)
     statec = state[:]
@@ -155,7 +151,9 @@ def shiftRows(state):
 
     return statec
 
-
+'''
+Inverse for Shift Rows Transformation
+'''
 def shiftRowsInv(state):
     state = normalize_state(state)
     statec = state[:]
@@ -168,6 +166,9 @@ def shiftRowsInv(state):
     return statec
 
 
+'''
+Generates C?
+'''
 def generate_C():
     c = [[2, 3, 1, 1], [1, 2, 3, 1], [1, 1, 2, 3], [3, 1, 1, 2]]
     for i in range(4):
@@ -180,6 +181,9 @@ def generate_C():
 generate_C()
 
 
+'''
+Generates C Inv?
+'''
 def generate_C_Inv():
     c = [
         ["0E", "0B", "0D", "09"],
@@ -189,11 +193,12 @@ def generate_C_Inv():
     ]
     global C_INV
     C_INV = normalize_state(c)
-
-
 generate_C_Inv()
 
 
+'''
+GF Field multiplication
+'''
 def gmul(a, b):
     p = 0
     for c in range(8):
@@ -205,7 +210,9 @@ def gmul(a, b):
         b >>= 1
     return p
 
-
+'''
+Single Column MixColumns
+'''
 def mixColumn(arr):
     a, b, c, d = arr
     v1 = gmul(a, 2) ^ gmul(b, 3) ^ gmul(c, 1) ^ gmul(d, 1)
@@ -215,6 +222,9 @@ def mixColumn(arr):
     return [v1, v2, v3, v4]
 
 
+'''
+MixColumns Transformation
+'''
 def mixColumns(state):
     global C
 
@@ -230,6 +240,9 @@ def mixColumns(state):
     return normalize_state(ans)
 
 
+'''
+Inverse Transformation of MixColumns for one Column
+'''
 def invmixColumn(arr):
     # print(arr)
     a, b, c, d = arr
@@ -242,6 +255,9 @@ def invmixColumn(arr):
     return [v1, v2, v3, v4]
 
 
+'''
+Inverse Transformation of MixColumns
+'''
 def invmixColumns(x):
     global C
 
@@ -257,13 +273,18 @@ def invmixColumns(x):
     return normalize_state(ans)
 
 
+'''
+Used in Key Expansion to rotate subword
+'''
 def RotWord(word):
     temp = deque(word)
     temp.rotate(-2)
     return "".join(list(temp))
     return temp
 
-
+'''
+Used in Key Expansion to get subword
+'''
 def SubWord(word):
     word = [word[i : i + 2] for i in range(0, len(word), 2)]
     word = normalize_block(word)
@@ -271,7 +292,9 @@ def SubWord(word):
     word = [get_sub(x) for x in word]
     return "".join(word)
 
-
+'''
+Adds Round key to the matrix
+'''
 def AddRoundKey(state, key):
 
     Nb = len(state)
@@ -289,7 +312,9 @@ def AddRoundKey(state, key):
             )
     return normalize_state(new_state)
 
-
+'''
+Performs key expansion to generate round keys
+'''
 def keyExpansion(key):
     RCon = ["01", "02", "04", "08", "10", "20", "40", "80", "1B", "36"]
     words = []
@@ -317,7 +342,9 @@ def keyExpansion(key):
             words.append(wi)
     return words
 
-
+'''
+Ciphers a given text with a given key
+'''
 def cipher(state, Key):
     global KEY
 
@@ -327,19 +354,23 @@ def cipher(state, Key):
     round = 0
     newState = AddRoundKey(state, roundkeys[round * 4 : round * 4 + 4])
 
+    # first 9 rounds have 4 transformations
     for round in range(1, 10):
         newState = state_subBytes(newState)
         newState = shiftRows(newState)
         newState = mixColumns(newState)
         newState = AddRoundKey(newState, roundkeys[round * 4 : round * 4 + 4])
-
+    
+    # Last round has only 3 transformations (skips mixColumns)
     newState = state_subBytes(newState)
     newState = shiftRows(newState)
     newState = AddRoundKey(newState, roundkeys[40:44])
 
     return newState
 
-
+'''
+Deciphers a given text with a given key
+'''
 def decipher(state, Key):
     global KEY
     Key = KEY
