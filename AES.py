@@ -390,9 +390,13 @@ roundkeys = keyExpansion(KEY)
 
 
 def encrypt(pt):
-    for i in range(16 - len(pt) % 16):
+    if chr(255) in pt:
+        raise ValueError("Unsupported character")
+    totalPadding = 16 - len(pt) % 16
+    if totalPadding !=0:
+        pt += chr(255)
+    for i in range(totalPadding-1):
         pt += " "
-
     test = ""
     for i in range(0, len(pt), 16):
         curr_pt = pt[i : i + 16]
@@ -425,7 +429,7 @@ def decrypt(test):
         chk = [chr(int(x, base=16)) for x in cstate]
         s = "".join(chk)
         testc = testc + s
-    return testc
+    return testc.split(chr(255))[0]
 
 
 pt = "My name is Slim shady. Hi kis do you like violence? Wanna see me stick nine inch nails through each one of my eyelids. Wanna copy me and do exactly like i did? Try and see if it gets fucked up worse than my life is?"
