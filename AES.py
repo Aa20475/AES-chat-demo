@@ -431,16 +431,16 @@ def decrypt(test):
         testc = testc + s
     return testc.split(chr(255))[0]
 
-
-pt = "My name is Slim shady. Hi kis do you like violence? Wanna see me stick nine inch nails through each one of my eyelids. Wanna copy me and do exactly like i did? Try and see if it gets fucked up worse than my life is?"
-print('"', pt, '"')
-print()
-test = encrypt(pt)
-# print('CipherText:',test)
-print()
-print('"', decrypt(test), '"')
-print()
-print("Recovered? ", pt == decrypt(test))
+if __name__=="__main__":
+    pt = "My name is Slim shady. Hi kis do you like violence? Wanna see me stick nine inch nails through each one of my eyelids. Wanna copy me and do exactly like i did? Try and see if it gets fucked up worse than my life is?"
+    print('"', pt, '"')
+    print()
+    test = encrypt(pt)
+    # print('CipherText:',test)
+    print()
+    print('"', decrypt(test), '"')
+    print()
+    print("Recovered? ", pt == decrypt(test))
 
 ####
 # To do:

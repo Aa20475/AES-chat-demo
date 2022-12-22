@@ -3,6 +3,8 @@ from flask_socketio import SocketIO
 from AES import encrypt, decrypt
 
 app = Flask(__name__)
+
+app.config["TEMPLATES_AUTO_RELOAD"] = True
 socketio = SocketIO(app)
 
 @app.route("/")
